@@ -1,6 +1,6 @@
 : 1
 name: pareto-line-cutter
-version: 0.1.0
+version: 0.1.1-a.0.z
 summary: pareto-line-cutter C++ executable
 license: other: proprietary ; Not free/open source.
 
