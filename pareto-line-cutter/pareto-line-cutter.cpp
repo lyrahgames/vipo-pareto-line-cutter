@@ -7,19 +7,25 @@
 #include <sstream>
 #include <string>
 #include <vector>
+//
+#include <lyrahgames/gnuplot/gnuplot.hpp>
+#include <lyrahgames/pareto/pareto.hpp>
 
 using namespace std;
+using namespace lyrahgames;
 
-using real = float;
+using real = double;
 struct point {
   real x, y;
-  size_t id;
 };
 
-int main(int argc, char* argv[]) {
-  if (3 != argc) {
+int main(int argc, char *argv[]) {
+  if ((argc < 5) || (argc > 6)) {
     cerr << "Error: Wrong number of command-line arguments!\n";
-    cout << "Usage:\n" << argv[0] << " <input data file> <output file>\n";
+    cout << "Usage:\n"
+         << argv[0]
+         << " <input data file> <column objective 0> <column objective 1> "
+            "<output file> [--plot]\n";
     return -1;
   }
 
@@ -29,10 +35,26 @@ int main(int argc, char* argv[]) {
     return -1;
   }
 
-  fstream output{argv[2], ios::out};
+  size_t first, second;
+  stringstream stream{argv[2]};
+  stream >> first;
+  stream = stringstream{argv[3]};
+  stream >> second;
+
+  fstream output{argv[4], ios::out};
   if (!output) {
     cerr << "Error: Failed to open '" << argv[2] << "' for writing.\n";
     return -1;
+  }
+
+  bool plot_enabled = false;
+  if (argc == 6) {
+    if (string(argv[5]) == "--plot")
+      plot_enabled = true;
+    else {
+      cerr << "Error: Failed to parse last command-line argument.\n";
+      return -1;
+    }
   }
 
   vector<point> pareto_front{};
@@ -43,55 +65,47 @@ int main(int argc, char* argv[]) {
       continue;
     stringstream stream{line};
     point p;
-    stream >> p.x >> p.y;
-    p.id = pareto_front.size();
+    float tmp;
+    size_t i = 0;
+    for (; i < first; ++i)
+      stream >> tmp;
+    stream >> p.x;
+    ++i;
+    for (; i < second; ++i)
+      stream >> tmp;
+    stream >> p.y;
     pareto_front.push_back(p);
   }
 
-  cout << setw(30) << "size = " << pareto_front.size() << '\n';
+  // cout << setw(30) << "size = " << pareto_front.size() << '\n';
 
-  // Sort Pareto frontier in x direction.
-  ranges::sort(pareto_front,
-               [](const auto& p, const auto& q) { return p.x < q.x; });
-
-  // Compute mean value.
-  real mean_distance = 0;
-  for (size_t i = 0; i < pareto_front.size() - 1; ++i) {
-    const auto [x1, y1, id1] = pareto_front[i];
-    const auto [x2, y2, id2] = pareto_front[i + 1];
-    mean_distance += sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+  pareto::frontier<real> frontier{pareto_front.size(), 0, 2};
+  for (size_t i = 0; i < frontier.sample_count(); ++i) {
+    auto it = frontier.objectives_iterator(i);
+    *it++ = pareto_front[i].x;
+    *it = pareto_front[i].y;
   }
-  mean_distance /= pareto_front.size() - 1;
 
-  cout << setw(30) << "mean distance = " << mean_distance << '\n';
-
-  // Compute the variance and standard deviation.
-  real var_distance = 0;
-  for (size_t i = 0; i < pareto_front.size() - 1; ++i) {
-    const auto [x1, y1, id1] = pareto_front[i];
-    const auto [x2, y2, id2] = pareto_front[i + 1];
-    const auto distance = sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-    var_distance += (distance - mean_distance) * (distance - mean_distance);
-  }
-  var_distance /= pareto_front.size() - 2;
-  auto stddev_distance = sqrt(var_distance);
-
-  cout << setw(30) << "distance variance = " << var_distance << '\n'
-       << setw(30) << "distance stddev = " << stddev_distance << '\n';
+  const auto line_cut = pareto::line_cut(frontier);
 
   output << '#' << setw(19) << "ID" << setw(20) << "Objective X" << setw(20)
          << "Objective Y" << '\n';
-  for (size_t i = 0; i < pareto_front.size() - 1; ++i) {
-    const auto [x1, y1, id] = pareto_front[i];
-    const auto [x2, y2, _] = pareto_front[i + 1];
-    const auto distance = sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-    output << setw(20) << id << setw(20) << x1 << setw(20) << y1 << '\n';
-    if (distance > mean_distance + 2 * stddev_distance) {
-      cout << "Cut connection (" << i << ", " << i + 1 << ").\n";
+  for (const auto &[first, last] : line_cut.lines()) {
+    for (size_t i = first; i < last; ++i) {
+      output << setw(20) << line_cut.permutation(i) << ' ';
+      for (auto y : frontier.objectives(line_cut.permutation(i)))
+        output << setw(20) << y << ' ';
       output << '\n';
     }
+    output << '\n';
   }
-  output << setw(20) << pareto_front.back().id << setw(20)
-         << pareto_front.back().x << setw(20) << pareto_front.back().y << '\n'
-         << flush;
+  output << flush;
+
+  if (plot_enabled) {
+    gnuplot::pipe plot{};
+    plot
+        << "plot '" << argv[4]
+        << "' u 2:3 w p pt 2 ps 0.5 lt rgb '#222222' title 'Point Estimation', "
+           "'' u 2:3 w l lw 2 lt rgb '#ff3333' title 'Frontier Estimation'\n";
+  }
 }

@@ -10,3 +10,6 @@ email: lyrahgames@mailbox.org
 
 depends: * build2 >= 0.13.0
 depends: * bpkg >= 0.13.0
+
+depends: lyrahgames-pareto == 0.1.3
+depends: lyrahgames-gnuplot == 0.1.4
