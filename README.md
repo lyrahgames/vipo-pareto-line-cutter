@@ -1,10 +1,27 @@
 <h1 align="center">
-    VIPO: Pareto Line Cutter for Two-Objective Pareto Frontiers
+    VIPO: Pareto Line Cutter for <br>Two-Objective Pareto Frontiers
 </h1>
 
 <p align="center">
     Executable to Estimate Continuously Connected Areas of Two-Objective Pareto Frontiers
 </p>
+
+<table align="center" border="0">
+    <tr>
+        <td align="center">
+            <figure>
+                <img src="docs/images/pareto2-kursawe-wrong-cropped.png" width="350">
+                <figcaption>Without Line Cut</figcaption>
+            </figure>
+        </td>
+        <td align="center">
+            <figure>
+                <img src="docs/images/pareto2-kursawe-frontier-cropped.png" width="350">
+                <figcaption>With Line Cut</figcaption>
+            </figure>
+        </td>
+    </tr>
+</table>
 
 ## Development Status
 
@@ -86,6 +103,7 @@
             <a href="https://github.com/lyrahgames/pareto">
                 lyrahgames-pareto
             </a>
+            <br>
             <a href="https://github.com/lyrahgames/gnuplot">
                 lyrahgames-gnuplot
             </a>
@@ -125,7 +143,19 @@ Update the created configuration and put the executables that can be found insid
     bdep update @mingw
 
 ## Usage
+The pareto-line-cutter can be called the following way.
 
+    ./pareto-line-cutter <input file> <first column> <second column> <output file> [-plot]
+
+The input file is expected to be written in ASCII-based CSV format with white space as separators and should contain the objective values of an estimated Pareto frontier of a chosen two-objective optimization problem.
+Then the first and second column parameters describe in which columns those values can be located.
+
+The output file will then again be written to in ASCII-based CSV format with white space as separators.
+The first column stores the index of the Pareto solution with respect to the input file.
+Following column describe for the sake of verbosity again the objective values.
+Connected areas are separated by an additional newline character
+
+For simplicity, the optional argument `-plot` can be provided to automatically plot the resulting connected areas with Gnuplot if it is available on the command line.
 
 ## Additional Information
 - [Authors](AUTHORS.md)
