@@ -1,4 +1,4 @@
-project = pareto-line-cutter
+project = vipo-pareto-line-cutter
 
 using version
 using config

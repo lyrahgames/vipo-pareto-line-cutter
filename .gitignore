@@ -15,11 +15,6 @@
 
 !*.md
 
-!docs/**
-
 !.clang-format
 
-!.githooks/**
-!.gitmodules
-!.gitattributes
-!.gitignore
+!.git*

@@ -1,11 +1,12 @@
 : 1
-name: pareto-line-cutter
+name: vipo-pareto-line-cutter
 version: 0.1.1-a.0.z
-summary: pareto-line-cutter C++ executable
-license: other: proprietary ; Not free/open source.
+project: vipo
+summary: Executable to Estimate Continuously Connected Areas of Two-Objective Pareto Frontiers
+license: GPL-3.0-or-later
 
 description-file: README.md
-# url: https://example.org/pareto-line-cutter
+url: https://github.com/lyrahgames/vipo-pareto-line-cutter
 email: lyrahgames@mailbox.org
 
 depends: * build2 >= 0.13.0
