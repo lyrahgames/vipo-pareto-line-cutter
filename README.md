@@ -41,7 +41,7 @@
             master
         </td>
         <td>
-            <a href="https://github.com/lyrahgames/pxart">
+            <a href="https://github.com/lyrahgames/vipo-pareto-line-cutter">
                 <img src="https://img.shields.io/github/last-commit/lyrahgames/vipo-pareto-line-cutter/master.svg?logo=github&logoColor=white">
             </a>
         </td>
